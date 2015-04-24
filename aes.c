@@ -11,9 +11,7 @@ int main(int argc, char **argv)
     int keylength,i;
     FILE *in,*out,*encr,*decr;
     char ch;
-    // printf("Give a key length [only 128 or 192 or 256!]:\n");
-    // scanf("%d", &keylength);
-
+    
     if (argc != 5) {
         printf(USAGE);
         return(1);

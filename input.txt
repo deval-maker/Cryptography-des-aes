@@ -1,9 +1,43 @@
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
-2.	Consider minimum and maximum input voltage values for selecting suitable duty.
+.c:91:26: error: ‘output’ undeclared (first use in this function)
+ DES_ncbc_encrypt (input, output, strlen (input), & schedule, & iv_enc, DES_ENCRYPT); 
+                          ^
+desOpenssl.c:91:26: note: each undeclared identifier is reported only once for each function it appears in
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+desOpenssl.c: In function ‘main’:
+desOpenssl.c:53:10: error: ‘i’ undeclared (first use in this function)
+     for (i=0; i<inputslength;i++) {
+          ^
+desOpenssl.c:53:10: note: each undeclared identifier is reported only once for each function it appears in
+desOpenssl.c:91:26: error: ‘output’ undeclared (first use in this function)
+ DES_ncbc_encrypt (input, output, strlen (input), & schedule, & iv_enc, DES_ENCRYPT); 
+                          ^
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+desOpenssl.c: In function ‘main’:
+desOpenssl.c:91:26: error: ‘output’ undeclared (first use in this function)
+ DES_ncbc_encrypt (input, output, strlen (input), & schedule, & iv_enc, DES_ENCRYPT); 
+                          ^
+desOpenssl.c:91:26: note: each undeclared identifier is reported only once for each function it appears in
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+desOpenssl.c: In function ‘main’:
+desOpenssl.c:90:36: error: ‘input’ undeclared (first use in this function)
+ printf ("before encryption:%s \n", input); 
+                                    ^
+desOpenssl.c:90:36: note: each undeclared identifier is reported only once for each function it appears in
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+desOpenssl.c: In function ‘main’:
+desOpenssl.c:99:28: error: ‘input’ undeclared (first use in this function)
+ printf ("decrypted:%s \n", input); 
+                            ^
+desOpenssl.c:99:28: note: each undeclared identifier is reported only once for each function it appears in
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+user@instant-contiki:~/Cryptography-des-aes$ ./desO input.txt encrypt.txt decrypt.txt aes
+Main Funcencrypted:user@instant-contiki:~/Cryptography-des-aes$ ./desO input.txt encrypt.txt decrypt.txt aes
+Main Funcencrypted:user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+user@instant-contiki:~/Cryptography-des-aes$ ./desO input.txt encrypt.txt decrypt.txt aes
+Main FuncEncryption Done. 
+Decryption Done. 
+user@instant-contiki:~/Cryptography-des-aes$ gcc desOpenssl.c -lm -lcrypto -o desO
+user@instant-contiki:~/Cryptography-des-aes$ ./desO input.txt encrypt.txt decrypt.txt aes
+Encryption Done. 
+Decryption Done. 
+user@instant-contiki:~/Cryptography-des-aes$ 
