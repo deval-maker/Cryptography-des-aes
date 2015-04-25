@@ -1,4 +1,4 @@
-/*
+/* To compile >> gcc sdes.c -lm -o sdes
  *  S-DES file encryption program
  *
  * Copyright (c) 2009, AlferSoft (www.alfersoft.com.ar - fvicente@gmail.com)
