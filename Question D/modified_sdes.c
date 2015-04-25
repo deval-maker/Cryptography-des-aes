@@ -1,9 +1,40 @@
+/*
+ *  S-DES file encryption program
+ *
+ * Copyright (c) 2009, AlferSoft (www.alfersoft.com.ar - fvicente@gmail.com)
+ * All rights reserved.
+ * 
+ * BSD License
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY AlferSoft ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AlferSoft BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#define USAGE	"Usage: Attack <plaintext file> <Cyphertext file> \n"
+#define USAGE	"Usage: msdes <-e | -d> <input file> <output file> <key 0-1023>\n"
 
 #define BIT_1	1
 #define BIT_2	2
@@ -21,13 +52,13 @@
 //#define DBG(desc, num, bits)		dbg_num(desc, num, bits);
 #define DBG(desc, num, bits)		//
 
-static short int sbox0[][4] = {
+static short int sbox1[][4] = {
 								1, 0, 3, 2,
 								3, 2, 1, 0,
 								0, 2, 1, 3,
 								3, 1, 3, 2
 							  };
-static short int sbox1[][4] = {
+static short int sbox0[][4] = {
 								0, 1, 2, 3,
 								2, 0, 1, 3,
 								3, 0, 1, 0,
@@ -171,7 +202,7 @@ static char ip_inverse(char byte) {
 	short int i;
 	char ret;
 	short int order[] = { BIT_5, BIT_8, BIT_6, BIT_4, BIT_2, BIT_7, BIT_1, BIT_3 };
-	
+
 	ret = '\0';
 	for (i = 0; i < 8; i++) {
 		ret = (ret << 1) | !!(order[i] & byte);
@@ -179,80 +210,80 @@ static char ip_inverse(char byte) {
 	return(ret);
 }
 
-
+/**
+ * Main program entry point
+ */
 int main(int argc, const char* argv[]) {
-	
 	FILE		*in,*out;
-	short int	key1,key2;
-	char		fwEnc,backDec,sk1,sk2,sk3,sk4,inC,outC;
-	short int keys[1048576][2];
-	int i,j,index,iterativeIndex;
-	
-	if (argc != 3) {
+	short int	key;
+	char		ch,sk1,sk2;
+
+	/*
+	// Quick test
+	generate_sub_keys(18,&sk1,&sk2);
+	DBG("SK1: ", (int)sk1, 8);
+	DBG("SK2: ", (int)sk2, 8);
+	ch = 0x41;
+	DBG("CHAR: ", (int)ch, 8);
+	ch = ip(ch);
+	DBG("IP: ", (int)ch, 8);
+	// apply function Fk
+	ch = fk(ch, sk1, sk2);
+	// ip^-1
+	ch = ip_inverse(ch);
+	DBG("OUT: ", (int)ch, 8);
+	return(0);
+	*/
+
+	if (argc != 5) {
 		printf(USAGE);
 		return(1);
 	}
-
-	in = fopen(argv[1], "rb");
+	key = atoi(argv[4]);
+	if ((key < 0 || key > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
+		printf(USAGE);
+		return(1);
+	}
+	key = (key % 1024);
+	switch (argv[1][1]) {
+		case 'e':		// encrypt
+			generate_sub_keys(key,&sk1,&sk2);
+			break;
+		case 'd':		// decrypt
+			generate_sub_keys(key,&sk2,&sk1);
+			break;
+		default:
+			printf(USAGE);
+			return(1);
+	}
+	// open input and output files
+	in = fopen(argv[2], "rb");
 	if (!in) {
 		printf("File not found %s\n", argv[2]);
 		return(1);
 	}
-	out = fopen(argv[2], "rb");
+	out = fopen(argv[3], "wb+");
 	if (!out) {
-		printf("File not found %s\n", argv[3]);
+		printf("Error creating output file %s\n", argv[3]);
 		fclose(in);
 		return(1);
 	}
-
-	for(i=0;i<1024;i++)
-	{
-		for(j=0;j<1024;j++)
-		{
-			keys[index][0]=i;
-			keys[index][1]=j;
-			index++;				
-		}
+	printf("Processing...\n");
+	while (!feof(in)) {
+		ch = fgetc(in);
+		// initial permutation (ip)
+		//ch = ip(ch);
+		// apply function Fk
+		ch = fk(ch, sk1, sk2);
+		// ip^-1
+		//ch = ip_inverse(ch);
+		fputc((char)ch, out);
 	}
+	printf("Ready!\n");
+	fclose(in);
+	fclose(out);
 
-	while((inC = fgetc(in))!=EOF)
-	{	
-		
-		iterativeIndex=0;
-		outC = fgetc(out);
-		for(i=0;i<index;i++)
-		{
-			fwEnc=inC;
-			backDec=outC;
-
-			generate_sub_keys(keys[i][0],&sk1,&sk2);
-			fwEnc = ip(fwEnc);
-			fwEnc = fk(fwEnc, sk1, sk2);
-			fwEnc = ip_inverse(fwEnc);
-			
-			generate_sub_keys(keys[i][1],&sk4,&sk3);
-			backDec = ip(backDec);
-			backDec = fk(backDec, sk3, sk4);
-			backDec = ip_inverse(backDec);
-
-						
-			if(fwEnc==backDec)
-			{
-				keys[iterativeIndex][0]=keys[i][0];
-				keys[iterativeIndex][1]=keys[i][1];
-				iterativeIndex++;
-			}
-					
-		}
-		
-		index=iterativeIndex;
-		if(iterativeIndex<2)
-		{
-			printf("key1:%d key2:%d \n",keys[0][0],keys[0][1]);
-			fclose(in);
-			fclose(out);
-			break;
-		}		
-	}
 	return 0;
 }
+
+

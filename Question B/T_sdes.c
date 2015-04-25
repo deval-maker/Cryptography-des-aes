@@ -34,7 +34,7 @@
 #include <string.h>
 #include <math.h>
 
-#define USAGE	"Usage: sdes <-e | -d> <input file> <output file> <key1 0-1023> <key2 0-1023> <key3 0-1023>\n"
+#define USAGE	"Usage: Tsdes <-e | -d> <input file> <output file> <key1 0-1023> <key2 0-1023> <key3 0-1023>\n"
 
 #define BIT_1	1
 #define BIT_2	2
@@ -376,7 +376,7 @@ int main(int argc, const char* argv[]) {
 		// initial permutation (ip)
 		ch = ip(ch);
 		// apply function Fk
-		ch = fk(ch, sk1, sk2);
+		ch = fk(ch, sk5, sk6);
 		// ip^-1
 		ch = ip_inverse(ch);
 		fputc((char)ch, out);

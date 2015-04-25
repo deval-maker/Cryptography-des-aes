@@ -1,0 +1,10 @@
+Here used input.txt and encrypt.txt are generated from Double simplified DES code. 
+encrypt.txt is encrypted cyphertext of input.txt usig key1=12 and key2=25.
+
+Commands to run the program:
+
+For Compilation: gcc meetMAttack.c -lm -o mim
+
+For Output: ./mim input.txt encrypt.txt
+
+Usage: mim <plaintext file> <Cyphertext file>

@@ -5,7 +5,7 @@
 #include <openssl/rand.h>
 #include <openssl/des.h>
 
-#define USAGE   "Usage: aes <input file> <encryption file> <decryption file> <key length [only 128 or 192 or 256!]> \n"
+#define USAGE   "Usage: desss <input file> <encryption file> <decryption file> <key String>\n"
 #define DES_BLOCK_SIZE 8
 
 int main(int argc, char **argv)

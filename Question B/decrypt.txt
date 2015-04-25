@@ -1,0 +1,13 @@
+DIFFERENTIAL C RYPTANALYSIS A TTACK The differential cryptanalysis attack is complex;
+[BIHA93] provides a complete description. The rationale behind differential
+cryptanalysis is to observe the behavior of pairs of text blocks evolving along each
+round of the cipher, instead of observing the evolution of a single text block. Here, we
+provide a brief overview so that you can get the flavor of the attack.
+We begin with a change in notation for DES. Consider the original plaintext
+block m to consist of two halves m 0 , m 1 . Each round of DES maps the right-hand
+input into the left-hand output and sets the right-hand output to be a function of the
+left-hand input and the subkey for this round. So, at each round, only one new 32-bit
+block is created. If we label each new block m i (2 ... i ... 17) , then the intermediate
+message halves are related as follows:
+
+ят))т

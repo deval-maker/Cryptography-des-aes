@@ -1,0 +1,8 @@
+Commands to run the program:
+
+For Compilation: gcc modified_sdes.c -lm -o msdes
+
+For Encryption: ./msdes –e input.txt encrypt.txt key_value[0-1023]
+For Decryption: ./msdes –d encrypt.txt decrypt.txt key_value[0-1023]
+
+Usage: msdes <-e | -d> <input file> <output file> <key 0-1023>\n

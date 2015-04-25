@@ -1,4 +1,4 @@
-/*  to compile >> gcc D_sdes.c -lm -o ddes
+/*
  *  S-DES file encryption program
  *
  * Copyright (c) 2009, AlferSoft (www.alfersoft.com.ar - fvicente@gmail.com)
@@ -34,7 +34,7 @@
 #include <string.h>
 #include <math.h>
 
-#define USAGE	"Usage: sdes <-e | -d> <input file> <output file> <key1 0-1023> <key2 0-1023>\n"
+#define USAGE	"Usage: mim <plaintext file> <Cyphertext file> \n"
 
 #define BIT_1	1
 #define BIT_2	2
@@ -202,7 +202,7 @@ static char ip_inverse(char byte) {
 	short int i;
 	char ret;
 	short int order[] = { BIT_5, BIT_8, BIT_6, BIT_4, BIT_2, BIT_7, BIT_1, BIT_3 };
-
+	
 	ret = '\0';
 	for (i = 0; i < 8; i++) {
 		ret = (ret << 1) | !!(order[i] & byte);
@@ -210,134 +210,80 @@ static char ip_inverse(char byte) {
 	return(ret);
 }
 
-/**
- * Main program entry point
- */
+
 int main(int argc, const char* argv[]) {
-	FILE		*in,*out,*intermediate;
+	
+	FILE		*in,*out;
 	short int	key1,key2;
-	char		ch,sk1,sk2,sk3,sk4;
-
-
-	/*
-	// Quick test
-	generate_sub_keys(18,&sk1,&sk2);
-	DBG("SK1: ", (int)sk1, 8);
-	DBG("SK2: ", (int)sk2, 8);
-	ch = 0x41;
-	DBG("CHAR: ", (int)ch, 8);
-	ch = ip(ch);
-	DBG("IP: ", (int)ch, 8);
-	// apply function Fk
-	ch = fk(ch, sk1, sk2);
-	// ip^-1
-	ch = ip_inverse(ch);
-	DBG("OUT: ", (int)ch, 8);
-	return(0);
-	*/
-
-	if (argc != 6) {
-		printf(USAGE);
-		return(1);
-	}
-	// Key 1 
-	key1 = atoi(argv[4]);
-	if ((key1 < 0 || key1 > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
+	char		fwEnc,backDec,sk1,sk2,sk3,sk4,inC,outC;
+	short int keys[1048576][2];
+	int i,j,index,iterativeIndex;
+	
+	if (argc != 3) {
 		printf(USAGE);
 		return(1);
 	}
 
-	key1 = (key1 % 1024);
-	switch (argv[1][1]) {
-		case 'e':		// encrypt
-			generate_sub_keys(key1,&sk1,&sk2);
-			break;
-		case 'd':		// decrypt
-			generate_sub_keys(key1,&sk2,&sk1);
-			break;
-		default:
-			printf(USAGE);
-			return(1);
-	}
-
-	// Key 2
-	key2 = atoi(argv[5]);
-	if ((key2 < 0 || key2 > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
-		printf(USAGE);
-		return(1);
-	}
-
-	key2 = (key2 % 1024);
-	switch (argv[1][1]) {
-		case 'e':		// encrypt
-			generate_sub_keys(key2,&sk3,&sk4);
-			break;
-		case 'd':		// decrypt
-			generate_sub_keys(key2,&sk4,&sk3);
-			break;
-		default:
-			printf(USAGE);
-			return(1);
-	}
-	// open input intermediate and output files
-	in = fopen(argv[2], "rb");
+	in = fopen(argv[1], "rb");
 	if (!in) {
 		printf("File not found %s\n", argv[2]);
 		return(1);
 	}
-	
-	intermediate = fopen("intermediate.txt", "wb+");
-	if (!intermediate) {
-		printf("Error creating output file %s\n", argv[3]);
+	out = fopen(argv[2], "rb");
+	if (!out) {
+		printf("File not found %s\n", argv[3]);
 		fclose(in);
 		return(1);
 	}
 
-	printf("Processing...\n");
-	while (!feof(in)) {
-		ch = fgetc(in);
-		// initial permutation (ip)
-		ch = ip(ch);
-		// apply function Fk
-		ch = fk(ch, sk1, sk2);
-		// ip^-1
-		ch = ip_inverse(ch);
-		fputc((char)ch, intermediate);
-	}
-	fclose(in);
-	fclose(intermediate);
-	
-	printf("intermediate done.\n");
-	
-	intermediate = fopen("intermediate.txt", "rb");
-	if (!intermediate) {
-		printf("File not found intermediate.txt \n");
-		return(1);
-	}
-	
-	out = fopen(argv[3], "wb+");
-	if (!out) {
-		printf("Error creating output file %s\n", argv[3]);
-		fclose(intermediate);
-		return(1);
+	for(i=0;i<1024;i++)
+	{
+		for(j=0;j<1024;j++)
+		{
+			keys[index][0]=i;
+			keys[index][1]=j;
+			index++;				
+		}
 	}
 
-	while (!feof(intermediate)) {
-		ch = fgetc(intermediate);
-		// initial permutation (ip)
-		ch = ip(ch);
-		// apply function Fk
-		ch = fk(ch, sk3, sk4);
-		// ip^-1
-		ch = ip_inverse(ch);
-		fputc((char)ch, out);
+	while((inC = fgetc(in))!=EOF)
+	{	
+		
+		iterativeIndex=0;
+		outC = fgetc(out);
+		for(i=0;i<index;i++)
+		{
+			fwEnc=inC;
+			backDec=outC;
+
+			generate_sub_keys(keys[i][0],&sk1,&sk2);
+			fwEnc = ip(fwEnc);
+			fwEnc = fk(fwEnc, sk1, sk2);
+			fwEnc = ip_inverse(fwEnc);
+			
+			generate_sub_keys(keys[i][1],&sk4,&sk3);
+			backDec = ip(backDec);
+			backDec = fk(backDec, sk3, sk4);
+			backDec = ip_inverse(backDec);
+
+						
+			if(fwEnc==backDec)
+			{
+				keys[iterativeIndex][0]=keys[i][0];
+				keys[iterativeIndex][1]=keys[i][1];
+				iterativeIndex++;
+			}
+					
+		}
+		
+		index=iterativeIndex;
+		if(iterativeIndex<2)
+		{
+			printf("key1:%d key2:%d \n",keys[0][0],keys[0][1]);
+			fclose(in);
+			fclose(out);
+			break;
+		}		
 	}
-
-	printf("Ready!\n");
-
-	fclose(intermediate);
-	fclose(out);
 	return 0;
 }
-
-

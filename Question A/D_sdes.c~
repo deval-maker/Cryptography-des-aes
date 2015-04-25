@@ -1,4 +1,4 @@
-/* To compile >> gcc sdes.c -lm -o sdes
+/*  to compile >> gcc D_sdes.c -lm -o ddes
  *  S-DES file encryption program
  *
  * Copyright (c) 2009, AlferSoft (www.alfersoft.com.ar - fvicente@gmail.com)
@@ -34,7 +34,7 @@
 #include <string.h>
 #include <math.h>
 
-#define USAGE	"Usage: sdes <-e | -d> <input file> <output file> <key 0-1023>\n"
+#define USAGE	"Usage: Dsdes <-e | -d> <input file> <output file> <key1 0-1023> <key2 0-1023>\n"
 
 #define BIT_1	1
 #define BIT_2	2
@@ -214,9 +214,10 @@ static char ip_inverse(char byte) {
  * Main program entry point
  */
 int main(int argc, const char* argv[]) {
-	FILE		*in,*out;
-	short int	key;
-	char		ch,sk1,sk2;
+	FILE		*in,*out,*intermediate;
+	short int	key1,key2;
+	char		ch,sk1,sk2,sk3,sk4;
+
 
 	/*
 	// Quick test
@@ -235,39 +236,63 @@ int main(int argc, const char* argv[]) {
 	return(0);
 	*/
 
-	if (argc != 5) {
+	if (argc != 6) {
 		printf(USAGE);
 		return(1);
 	}
-	key = atoi(argv[4]);
-	if ((key < 0 || key > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
+	// Key 1 
+	key1 = atoi(argv[4]);
+	if ((key1 < 0 || key1 > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
 		printf(USAGE);
 		return(1);
 	}
-	key = (key % 1024);
+
+	key1 = (key1 % 1024);
 	switch (argv[1][1]) {
 		case 'e':		// encrypt
-			generate_sub_keys(key,&sk1,&sk2);
+			generate_sub_keys(key1,&sk1,&sk2);
 			break;
 		case 'd':		// decrypt
-			generate_sub_keys(key,&sk2,&sk1);
+			generate_sub_keys(key1,&sk2,&sk1);
 			break;
 		default:
 			printf(USAGE);
 			return(1);
 	}
-	// open input and output files
+
+	// Key 2
+	key2 = atoi(argv[5]);
+	if ((key2 < 0 || key2 > 1023) || strlen(argv[1]) != 2 || argv[1][0] != '-') {
+		printf(USAGE);
+		return(1);
+	}
+
+	key2 = (key2 % 1024);
+	switch (argv[1][1]) {
+		case 'e':		// encrypt
+			generate_sub_keys(key2,&sk3,&sk4);
+			break;
+		case 'd':		// decrypt
+			generate_sub_keys(key2,&sk4,&sk3);
+			break;
+		default:
+			printf(USAGE);
+			return(1);
+	}
+	// open input intermediate and output files
 	in = fopen(argv[2], "rb");
 	if (!in) {
 		printf("File not found %s\n", argv[2]);
 		return(1);
 	}
-	out = fopen(argv[3], "wb+");
-	if (!out) {
+	
+	intermediate = fopen("intermediate.txt", "wb+");
+	if (!intermediate) {
 		printf("Error creating output file %s\n", argv[3]);
 		fclose(in);
 		return(1);
 	}
+
 	printf("Processing...\n");
 	while (!feof(in)) {
 		ch = fgetc(in);
@@ -277,12 +302,41 @@ int main(int argc, const char* argv[]) {
 		ch = fk(ch, sk1, sk2);
 		// ip^-1
 		ch = ip_inverse(ch);
+		fputc((char)ch, intermediate);
+	}
+	fclose(in);
+	fclose(intermediate);
+	
+	printf("intermediate done.\n");
+	
+	intermediate = fopen("intermediate.txt", "rb");
+	if (!intermediate) {
+		printf("File not found intermediate.txt \n");
+		return(1);
+	}
+	
+	out = fopen(argv[3], "wb+");
+	if (!out) {
+		printf("Error creating output file %s\n", argv[3]);
+		fclose(intermediate);
+		return(1);
+	}
+
+	while (!feof(intermediate)) {
+		ch = fgetc(intermediate);
+		// initial permutation (ip)
+		ch = ip(ch);
+		// apply function Fk
+		ch = fk(ch, sk3, sk4);
+		// ip^-1
+		ch = ip_inverse(ch);
 		fputc((char)ch, out);
 	}
-	printf("Ready!\n");
-	fclose(in);
-	fclose(out);
 
+	printf("Ready!\n");
+
+	fclose(intermediate);
+	fclose(out);
 	return 0;
 }
 

@@ -1,4 +1,3 @@
-// to compile >> gcc aes.c -lm -lcrypto -lssl -o aes
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
