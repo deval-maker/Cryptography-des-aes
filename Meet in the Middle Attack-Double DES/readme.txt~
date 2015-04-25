@@ -1,3 +1,5 @@
+Question: 
+
 Here used input.txt and encrypt.txt are generated from Double simplified DES code. 
 encrypt.txt is encrypted cyphertext of input.txt usig key1=12 and key2=25.
 

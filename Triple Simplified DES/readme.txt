@@ -1,3 +1,5 @@
+Question: Extend the code to perform Triple Simplified DES
+
 Commands to run the program:
 
 For Compilation: gcc T_sdes.c -lm -o Tsdes
